@@ -1,10 +1,100 @@
 import flet as ft
+from flet import View
 import sqlite3
+import datetime
+import os
+
+#Database Connection
+
+
+db = sqlite3.connect('upcase.db',check_same_thread=False)
+cursor = db.cursor()
+
+#Test connection
+try:
+    if sqlite3.Connection:
+        print("Connected")
+    else:
+        print("Not connected yet")
+except sqlite3.Error as error:
+    print(error)
+
+
+
 
 
 def main(page: ft.Page):
+    #--------------- BUILD DATABASE ------------------------- 
+    def Display_Profile(e):
+        Display_DB_Query = '''
+            SELECT name,profession,company,status,birth
+            FROM Profile
+            WHERE id = 1
+        '''
+        try:
+            cursor.execute(Display_DB_Query)
+            print("all record Release")
+            for obj in cursor.fetchall():
+                Name = obj[0]
+                Profession = obj[1]
+                Company = obj[2]
+                Status = obj[3]
+                # Birthday = datetime.datetime.strptime(str(obj[4]), '%d-%m-%Y')
+                # formatted = Birthday.strftime('%d-%m-%Y')
+            NameDisplay.value = str(Name)
+            professionDisplay.value = str(Profession)
+            companyDisplay.value = str(Company)
+            statusDisplay.value = str(Status)
+            # birthDisplay.value = formatted
+            db.commit()
+        except sqlite3.Error as error:
+            print(error)
+        page.update()
 
+
+    def Update_Profile(e):
+        Display_Profile(e)      
+        Update_DB_query = f'''
+            UPDATE Profile 
+            SET id = 1, name = '{Nameinput.value}', profession = '{Professioninput.value}',
+            company = '{Companyinput.value}', status = '{Statusinput.value}', birth = {Birthday_select_text.value}
+        '''
+        Insert_DB_query = f'''
+            INSERT INTO Profile (id,name,profession,company,status,birth)
+            VALUES (?, ?, ?, ?, ?, ?)
+        '''
+        ID = 1
+        Query_tube = (ID,str(Nameinput.value),str(Professioninput.value),
+                      str(Companyinput.value),str(Statusinput.value),Birthday_select_text.value)
+        try:
+            cursor.execute(Update_DB_query)
+            print("Command in process")
+            Display_Profile(e)
+            db.commit()
+        except sqlite3.Error as error:
+            print(error)
+        
+        page.update()
+
+
+
+    
     #--------------- BUILD FUNCTION ------------------------- 
+    #Birthday Selection
+ 
+    def Birthday_selection(e):
+        Birthday_select_text.value = f'{e.control.value.strftime('%d-%m-%Y')}'
+        page.update()
+
+    #Set up Date picker Variable    
+    DatePickUp = ft.DatePicker(
+        
+        first_date=datetime.datetime(1950,1,1),
+        last_date=datetime.datetime.now(),
+        on_change=Birthday_selection,
+        
+    )
+
     #Offset animation
     def ActionNexttoEdit(e):
         Profile.offset = ft.transform.Offset(-2,0)
@@ -22,8 +112,6 @@ def main(page: ft.Page):
         page.update()
 
     def ActionBacktoProfile(e):
-        
-
         Profile.offset = ft.transform.Offset(0,0)
         EditProfile.offset = ft.transform.Offset(2,0)
         NextAction.visible = True
@@ -68,15 +156,16 @@ def main(page: ft.Page):
 
     #Icon
     User = ft.Icon(ft.icons.ACCOUNT_BOX)
-    Profession = ft.Icon(ft.icons.IMAGE_ASPECT_RATIO_OUTLINED)
+    Profession = ft.Icon(ft.icons.LOCAL_ATTRACTION_SHARP)
     company = ft.Icon(ft.icons.HOME)
-    status = ft.Icon(ft.icons.GIF_BOX)
+    status = ft.Icon(ft.icons.VISIBILITY_OUTLINED)
     birth = ft.Icon(ft.icons.CALENDAR_TODAY)
-    
+    SaveProfile = ft.ElevatedButton("Save",color="white",bgcolor=ft.colors.PINK_200,on_click=Update_Profile)
     #TextField
     Nameinput = ft.TextField(width=250,height=50,color="grey",bgcolor=ft.colors.GREY_200,border_color=ft.colors.GREY_200)
     Professioninput = ft.TextField(width=250,height=50,color="grey",bgcolor=ft.colors.GREY_200,border_color=ft.colors.GREY_200)
     Companyinput = ft.TextField(width=250,height=50,color="grey",bgcolor=ft.colors.GREY_200,border_color=ft.colors.GREY_200)
+    
     Statusinput = ft.Dropdown(
         width=250,
         height=60,
@@ -93,12 +182,23 @@ def main(page: ft.Page):
         bgcolor=ft.colors.GREY_200
         
     )
+    TimeSelectionButton = ft.IconButton(
+        ft.icons.CALENDAR_MONTH,icon_color="white",
+        on_click= lambda _: DatePickUp.pick_date()
+    ) 
+    Time_selection_layout = ft.Container(
+        TimeSelectionButton,
+        width=50,
+        height=54,
+        bgcolor="grey",
+        margin=ft.margin.only(right=-10)
+    )
+
+
 
     Birthday_select_text = ft.TextField(
-        hint_text="0/0/0",
-        hint_style=ft.TextStyle(color="grey"),
-        prefix_icon=ft.IconButton(ft.icons.EDIT_CALENDAR_OUTLINED),
-        width=250,height=50,color="grey",bgcolor=ft.colors.GREY_200,border_color=ft.colors.GREY_200
+        hint_text="0/0/0", hint_style=ft.TextStyle(color="grey"),
+        width=200,height=55,color="grey",bgcolor=ft.colors.GREY_200,border_color=ft.colors.GREY_200
     )
 
 
@@ -178,34 +278,46 @@ def main(page: ft.Page):
     Editform = ft.Container(
         ft.Column(
             [
-                
-                ft.Row(
+                ft.Column(
                     [
-                        ft.Column(
+                        
+                        ft.Row(
                             [
-                                ft.Text("Name",color="grey",weight="bold"),
-                                Nameinput,
-                                ft.Text("Profession",color="grey",weight="bold"),
-                                Professioninput,
-                                ft.Text("Company",color="grey",weight="bold"),
-                                Companyinput,
-                                ft.Text("Status",color="grey",weight="bold"),
-                                Statusinput,
-                                ft.Text("Birthday",color="grey",weight="bold"),
-                                Birthday_select_text
-                                
-                                
+                                ft.Column(
+                                    [
+                                        ft.Text("Name",color="grey",weight="bold"),
+                                        Nameinput,
+                                        ft.Text("Profession",color="grey",weight="bold"),
+                                        Professioninput,
+                                        ft.Text("Company",color="grey",weight="bold"),
+                                        Companyinput,
+                                        ft.Text("Status",color="grey",weight="bold"),
+                                        Statusinput,
+                                        ft.Text("Birthday",color="grey",weight="bold"),
+                                        ft.Row(
+                                            [
+                                                Time_selection_layout,
+                                                Birthday_select_text
+                                            ]
+                                        )
+                                        
+                                        
+                                    ],
+                                    
+                                )
                             ],
                             
-                        )
+                        ),
+                        
                     ],
-                    
-                )
+                    height=200,
+                    scroll=ft.ScrollMode.ALWAYS
+                ),
+                SaveProfile
             ],
-            height=100,
-            scroll=ft.ScrollMode.ALWAYS
+            
         ),
-        height=250,
+        height=300,
         width=300,
         margin=ft.margin.only(left=20),
         padding=ft.padding.only(top=5,left=30),
@@ -291,16 +403,34 @@ def main(page: ft.Page):
     
     
 
+    page.overlay.append(DatePickUp)
     
-    page.add(
-        ft.Row(
-            controls=[
-                Profile,
-                EditProfile
-            ]
-        ),
-        ActionEvent
-    )
+    def route_change(e):
+        page.views.clear
+        page.views.append(
+            View(
+                "/Profile",
+                [
+                    ft.Row(
+                        controls=[
+                            Profile,
+                            EditProfile
+                        ]
+                    ),
+                    ActionEvent
+                ],
+                Display_Profile(e),
+                bgcolor=ft.colors.PINK_100
+            )
+        )
+        page.update()
+    def view_pop(View):
+        page.views.pop()
+        top_view = page.views[-1]
+        page.go(top_view.route)
+    page.on_route_change = route_change
+    page.on_view_pop = view_pop
+    page.go(page.route)
 
     page.bgcolor = ft.colors.PINK_100
     page.update()
