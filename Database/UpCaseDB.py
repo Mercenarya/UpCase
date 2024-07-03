@@ -22,14 +22,12 @@ def Profile():
         )
     '''
     return Setprofile
-# def List():
-#     SetList = '''
-#         SELECT * FROM Profile
-#     '''
-#     return SetList
-SetList = '''
+def List():
+    SetList = '''
         SELECT * FROM Profile
     '''
+    return SetList
+
 def Drop():
     dropCmd = '''ALTER TABLE profile DROP COLUMN note'''
     return dropCmd
@@ -40,11 +38,12 @@ def PragmaList():
 try:
     if sqlite3.Connection:
         print("Connection set up")
-        cursor.execute(SetList)
+        cursor.execute(List())
         print("Release list of table")
         for obj in cursor.fetchall():
-            print(obj[0])
+            print(obj)
         print("Command in process")
+
         DB.commit()
     elif sqlite3.Error:
         print("DB Error")

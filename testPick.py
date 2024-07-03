@@ -6,7 +6,7 @@ from tkcalendar import DateEntry
 from datetime import datetime
 
 # Kết nối tới cơ sở dữ liệu
-conn = sqlite3.connect('example.db')
+conn = sqlite3.connect('upcase.db')
 c = conn.cursor()
 
 # Tạo bảng nếu chưa tồn tại
@@ -25,18 +25,18 @@ def save_data():
     birthday = birthday_entry.get_date().strftime('%Y-%m-%d')
     
     # Chèn dữ liệu vào bảng
-    c.execute("UPDATE Profile SET name = ?, profession = ?, company = ?, status = ?, birthday = ? WHERE id = 1", 
+    c.execute("UPDATE Profile SET name = ?, profession = ?, company = ?, status = ?, birth = ? WHERE id = 1", 
               (name, profession, company, status, birthday))
     conn.commit()
     messagebox.showinfo("Info", "Data saved successfully!")
 
 # Hàm hiển thị dữ liệu từ cơ sở dữ liệu
 def display_data():
-    c.execute("SELECT * FROM my_table")
+    c.execute("SELECT * FROM Profile")
     rows = c.fetchall()
     display_text = ""
     for row in rows:
-        display_text += f"ID: {row[0]}, Name: {row[1]}, Profession: {row[2]}, Company: {row[3]}, Status: {row[4]}, Birthday: {row[5]}\n"
+        display_text += f"ID: {row[0]}, Name: {row[2]}, Profession: {row[3]}, Company: {row[4]}, Status: {row[5]}, Birthday: {row[6]}\n"
     data_display.delete(1.0, tk.END)
     data_display.insert(tk.END, display_text)
 
