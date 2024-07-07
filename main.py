@@ -20,11 +20,75 @@ try:
 except sqlite3.Error as error:
     print(error)
 
+class Task(ft.Column):
+    
+    def __init__(self, name_task, delete_task):
+        super().__init__()
+        self.name_task = name_task
+        self.delete_task = delete_task
+        self.Task_value =ft.Text(value=self.name_task,color="white")
+        
+        self.display_task =  ft.Container(
+                ft.Row(
+                    controls=[
+                            ft.Checkbox(check_color="white"),
+                            ft.Container(
+                                self.Task_value,
+                                width=200,
+                                height=20
+                            ),
+                            ft.IconButton(ft.icons.DELETE,icon_color="red",on_click=self.Deletete_clicked)
+                        ]
+                    ),
+                padding=ft.padding.only(left=10),
+                width=400,
+                height=50,
+                border=ft.border.all(1,"orange"),
+                bgcolor="orange"
+            )
+        self.controls = [self.display_task]
+    def Deletete_clicked(self, e):
+        self.delete_task(self)
 
+class TodoApp(ft.Column):
+    def __init__(self):
+        super().__init__()
+        self.Task_Field = ft.TextField(width=270,border_color="white",hint_text="Task...",
+                              hint_style=ft.TextStyle(color="grey"),color="white")
+        
+        self.Todo_list = ft.Column(
+            [
+                
+            ],
+            scroll=ft.ScrollMode.ALWAYS,
+            height=400,
+            width=400
+        )
+       
+        self.controls = [
+            ft.Row(
+                controls=[
+                    self.Task_Field,
+                    ft.FloatingActionButton(
+                        icon=ft.icons.ADD, on_click=self.add
+                    )
+                ]
+            ),
+            self.Todo_list
+        ]
 
+    def add(self, e):
+        task = Task(self.Task_Field.value, self.Delete)
+        self.Todo_list.controls.append(task)
+        self.update()
 
+    def Delete(self, task):
+        self.Todo_list.controls.remove(task)
+        self.update()
+    
 
 def main(page: ft.Page):
+   
     #--------------- BUILD DATABASE ------------------------- 
     def Display_Profile(e):
         Display_DB_Query = '''
@@ -109,47 +173,49 @@ def main(page: ft.Page):
     
     
     #--------------- BUILD FUNCTION ------------------------- 
+    #To do Feartures 
+
+    
+
+
+
     #Birthday Selection
+    def Tabs_TopBar(e):
+        OpenBar.visible = False
+        CloseBar.visible =True
+        Greeting_banner.height = 500 if Greeting_banner.height == 50 else 50
+        page.update()
+    def Tabs_TopBar_close(e):
+        OpenBar.visible = True
+        CloseBar.visible = False
+        Greeting_banner.height = 50 if Greeting_banner.height == 500 else 500
+        page.update()
+
+    def Invisible_banner(e):
+        if AppBar.selected_index == page_4:
+            Greeting_banner.visible = False
+        else:
+            Greeting_banner.visible = True
+        page.update()    
     def Selected_page(e):
+        
         for index, page_nav in enumerate(page_stack):
             page_nav.visible = True if index == AppBar.selected_index else False
-            
-            
+        
         page.update()
+    def Selected_tabs(e):
+        for index, page_nav in enumerate(page_tabs):
+            page_nav.visible = True if index == SelectionTabs.selected_index else False
+        page.update()
+
     def Birthday_selection(e):
         Birthday_select_text.value = e.control.value.strftime('%Y-%m-%d')
         birthDisplay.value = Birthday_select_text.value
         print(birthDisplay.value)
         page.update()
 
-    def Search_bar(e):
-        Search.opacity = 0 if Search.opacity == 1 else 1
-        Search.update()
-        page.update()
+    
 
-    def Animate_TopBar(e):
-        Greeting_banner.height = 200 if Greeting_banner.height == 130 else 130
-        page.update()
-    def Animate_TopBar_close(e):
-        Greeting_banner.height = 130 if Greeting_banner.height == 200 else 200
-        page.update()
-
-    def Open_Search(e):
-        SearchIcon.visible = False
-        BackSearchIcon.visible = True
-        Animate_TopBar(e)
-        Search_bar(e)
-        Search.visible = True
-        page.update()
-
-    def Close_Search(e):
-        SearchIcon.visible = True
-        BackSearchIcon.visible = False
-        Search_bar(e)
-        time.sleep(0.3)
-        Animate_TopBar_close(e)
-        Search.visible = False
-        page.update()
 
     #Set up Date picker Variable    
     DatePickUp = ft.DatePicker(
@@ -167,12 +233,6 @@ def main(page: ft.Page):
         NextAction.visible = False
         BackAction.visible = True
         ChangeSwitched.value = "Edit"
-        animation_ref_1.width=60
-        animation_ref_1.height=60
-        animation_ref_1.animate_scale=ft.animation.Animation(duration=500,curve="bounceOut")
-        animation_ref_1.scale = ft.transform.Scale(1)
-        
-        animation_ref_1.image_src="https://i.pinimg.com/originals/7e/83/13/7e831379147b6bcbdd05bc9dbb60352b.gif"
         Profile.update()
         EditProfile.update()
         page.update()
@@ -183,11 +243,6 @@ def main(page: ft.Page):
         NextAction.visible = True
         BackAction.visible = False
         ChangeSwitched.value = "Profile"
-        animation_ref_1.width=50
-        animation_ref_1.height=50
-        animation_ref_1.animate_scale=ft.animation.Animation(duration=500,curve="bounceOut")
-        animation_ref_1.scale = ft.transform.Scale(1)
-        animation_ref_1.image_src="https://media2.giphy.com/avatars/tontonfriends/oR1fkkiDPgSG.gif"
         Profile.update()
         EditProfile.update()
         page.update()
@@ -202,6 +257,10 @@ def main(page: ft.Page):
 
 
 
+    '''
+        PROFILE PAGE IS THE LAST SELECTION FROM CUPERTINO BAR BELOW
+        PROFILE WITH EDIT AND DISPLAY YOUR PERSONAL INFORMATION 
+    '''
 
     #Text Actor 
     NameDisplay = ft.Text("Tran Hoang Minh",color="grey",weight="bold")
@@ -212,13 +271,7 @@ def main(page: ft.Page):
     
     ChangeSwitched = ft.Text("Profile",size=30,color="white")
     #Animation
-    animation_ref_1 = ft.Container(
-        image_src="https://media2.giphy.com/avatars/tontonfriends/oR1fkkiDPgSG.gif",
-        width=50,
-        height=50,
-        
-    )
-
+    
     #Action button
     NextAction = ft.IconButton(
         ft.icons.NAVIGATE_NEXT,icon_color="white",
@@ -235,7 +288,7 @@ def main(page: ft.Page):
     company = ft.Icon(ft.icons.HOME)
     status = ft.Icon(ft.icons.VISIBILITY_OUTLINED)
     birth = ft.Icon(ft.icons.CALENDAR_TODAY)
-    SaveProfile = ft.ElevatedButton("Save",color="white",bgcolor=ft.colors.PINK_200,on_click=Update_Profile)
+    SaveProfile = ft.ElevatedButton("Save",color="white",bgcolor=ft.colors.GREY_500,on_click=Update_Profile)
     #TextField
     Nameinput = ft.TextField(width=250,height=50,color="grey",bgcolor=ft.colors.GREY_200,border_color=ft.colors.GREY_200)
     Professioninput = ft.TextField(width=250,height=50,color="grey",bgcolor=ft.colors.GREY_200,border_color=ft.colors.GREY_200)
@@ -279,7 +332,7 @@ def main(page: ft.Page):
 
     #Build Banner
     avt = ft.Container(
-        image_src="https://scontent-hkg1-1.xx.fbcdn.net/v/t39.30808-6/326753167_6249603558392243_3752875849790351645_n.jpg?_nc_cat=105&ccb=1-7&_nc_sid=127cfc&_nc_eui2=AeFQWfvDZ1bf0JLLs8qCoJbrWiUkN8epkqhaJSQ3x6mSqIU_Uu39JO9eqzjAxlmHOvYArXKoGP3DOGXeoUDIPEat&_nc_ohc=6KHydAzxh5gQ7kNvgFsZ3fm&_nc_ht=scontent-hkg1-1.xx&gid=AMugb3JbBHEA5km7u8Zxow1&oh=00_AYDACS3pJLBsxaDE5GUOtKio42HujUqinf8n53RWEtJj-A&oe=668ADAC6",
+        image_src="C:/pen.png",
         bgcolor="grey",
         border=ft.border.BorderSide(5,"black"),
         border_radius=100,
@@ -295,16 +348,6 @@ def main(page: ft.Page):
         border_radius=100,
         height=150,
         width=150,
-        image_fit=ft.ImageFit.COVER
-
-    )
-    Homepage_AVT = ft.Container(
-        image_src="https://scontent-hkg1-1.xx.fbcdn.net/v/t39.30808-6/326753167_6249603558392243_3752875849790351645_n.jpg?_nc_cat=105&ccb=1-7&_nc_sid=127cfc&_nc_eui2=AeFQWfvDZ1bf0JLLs8qCoJbrWiUkN8epkqhaJSQ3x6mSqIU_Uu39JO9eqzjAxlmHOvYArXKoGP3DOGXeoUDIPEat&_nc_ohc=6KHydAzxh5gQ7kNvgFsZ3fm&_nc_ht=scontent-hkg1-1.xx&gid=AMugb3JbBHEA5km7u8Zxow1&oh=00_AYDACS3pJLBsxaDE5GUOtKio42HujUqinf8n53RWEtJj-A&oe=668ADAC6",
-        bgcolor="grey",
-        border=ft.border.BorderSide(1,"grey"),
-        border_radius=100,
-        height=30,
-        width=30,
         image_fit=ft.ImageFit.COVER
 
     )
@@ -426,7 +469,7 @@ def main(page: ft.Page):
         ),
         width=330,        
         height=490,
-        bgcolor="white",
+        bgcolor=ft.colors.GREY_100,
         border_radius=20,
         margin=ft.margin.only(top=10,left=3),
         padding=ft.padding.only(top=40),
@@ -457,7 +500,7 @@ def main(page: ft.Page):
         ),
         width=330,
         height=490,
-        bgcolor="white",
+        bgcolor=ft.colors.GREY_100,
         border_radius=20,
         margin=ft.margin.only(top=10,left=3),
         padding=ft.padding.only(top=40),
@@ -471,16 +514,10 @@ def main(page: ft.Page):
     )
         
     
-   
-   
-    
-        
-    
-    
     ActionEvent = ft.Container(
         ft.Row(
             [
-                animation_ref_1,
+                
                 ChangeSwitched,
                 NextAction,
                 BackAction
@@ -489,133 +526,30 @@ def main(page: ft.Page):
         )
     )
     
+    #-----------------------------------
+    '''
+        TO DO FEATURE IN UPCASE WITH HELP BEING SCHEDULED ALL 
+        TASKS TO DO AND PLANS
+    '''
     
-    #APP'S NAVIGATION
+    
 
-    #Set up Page List and Loop
-    Search = ft.Container(
-        ft.TextField(width=300,height=50,border_color="grey",hint_text="Search...",
-            hint_style=ft.TextStyle(color="grey",size=15),
-            text_size=15,border_radius=10,color="grey"
-        ),
-        animate_opacity=500,opacity=0,
-        visible=False
-    )
-    #Type CupertinoNavigationBar
-    #Custom Tabs
-    SelectionTabs = ft.Tabs(
-        selected_index=1,
-        animation_duration=500,
-        tabs=[
-            ft.Tab(
-                text="to do",
-                icon="Book"
-            ),
-            ft.Tab(
-                text="Schedule",
-                icon="Schedule"
-            ),
-            ft.Tab(
-                text="ChatAI",
-                icon=ft.icons.CHAT
-            ),
-            ft.Tab(
-                text="Profile",
-                icon=ft.icons.ACCOUNT_BOX_ROUNDED
-            )
-        ],
-        label_color=ft.colors.PINK_200,
-        divider_color=ft.colors.PINK_50,
-        scrollable=True,
-        indicator_color="white",
-        unselected_label_color="grey"  
-    )
+    
+
+    
+
+   
+    
+    
 
 
-    ScheduleTabs = ft.Tabs(
-        selected_index=1,
-        animation_duration=500,
-        tabs=[
-            ft.Tab(
-                text="Monday",
-                
-            ),
-            ft.Tab(
-                text="Tuesday",
-                
-            ),
-            ft.Tab(
-                text="Wednesday",
-                
-            ),
-            ft.Tab(
-                text="Thursday",
-                
-            ),
-            ft.Tab(
-                text="Friday",
-                
-            ),
-            ft.Tab(
-                text="Saturday",
-                
-            ),
-            ft.Tab(
-                text="Sunday",
-                
-            )
-        ],
-        label_color=ft.colors.PINK_200,
-        divider_color=ft.colors.PINK_50,
-        scrollable=True,
-        indicator_color="white",
-        unselected_label_color="grey",
-         
-    )
-    #Create Button Actor
-    SearchIcon = ft.IconButton(icon="search",icon_color="grey",on_click=Open_Search,visible=True)
-    BackSearchIcon = ft.IconButton(icon="search",icon_color="grey",on_click=Close_Search,visible=False)
-    #Custome Actor, Banner, Design for page_1
-    Greeting_banner = ft.Container(
-        ft.Column(
-            [
-                ft.Row(
-                    [
-                        
-                        ft.IconButton(ft.icons.MENU,icon_color="grey",visible=True),
-                        ft.Text("UpCase",color="grey",size=25,weight="bold"),
-                        SearchIcon,
-                        BackSearchIcon
-                            
-                    ],
-                    alignment="spaceBetween",
-                ),
-                ft.Row(
-                    [
-                        Search,
-                    ],
-                    alignment=ft.MainAxisAlignment.CENTER
-                ),
-                SelectionTabs
-                
-            ]
-        ),
-        border_radius=ft.border_radius.vertical(
-            bottom=30
-        ),
-        bgcolor=ft.colors.PINK_50,
-        width=400,
-        height=130,
-        padding=5,
-        shadow= ft.BoxShadow(
-            blur_radius=3,
-            color="black",
-            blur_style=ft.ShadowBlurStyle.OUTER
-        ),
-        animate=ft.animation.Animation(1000, ft.AnimationCurve.BOUNCE_OUT),
-        
-        
-    )
+
+   
+    #-----------------------------------
+    '''
+        HOMEPAGE IN UPCASE WITH ALL UTITLITIES
+        INITIAL VIEW FROM CUPERTINOBAR ROUTE BELOW (HOME)
+    '''
     #UTILITIES
 
     #AI Tools
@@ -651,7 +585,8 @@ def main(page: ft.Page):
             blur_style=ft.ShadowBlurStyle.OUTER
         )
     )
-    #ToDo 
+
+    #ToDo Feature
     ToDo_image = ft.Container(
         image_src="https://i.pinimg.com/736x/30/47/d7/3047d747871c7b5421137d644b7dbf04.jpg",
         height=150,
@@ -756,7 +691,46 @@ def main(page: ft.Page):
 
 
     #Schedule
-
+    ScheduleTabs = ft.Tabs(
+        selected_index=1,
+        animation_duration=500,
+        tabs=[
+            ft.Tab(
+                text="Monday",
+                
+            ),
+            ft.Tab(
+                text="Tuesday",
+                
+            ),
+            ft.Tab(
+                text="Wednesday",
+                
+            ),
+            ft.Tab(
+                text="Thursday",
+                
+            ),
+            ft.Tab(
+                text="Friday",
+                
+            ),
+            ft.Tab(
+                text="Saturday",
+                
+            ),
+            ft.Tab(
+                text="Sunday",
+                
+            )
+        ],
+        label_color=ft.colors.BLACK,
+        divider_color=ft.colors.GREY,
+        scrollable=True,
+        indicator_color="grey",
+        unselected_label_color="grey",
+         
+    )
     Schedule = ft.Container(
         ft.Column(
             [
@@ -796,10 +770,6 @@ def main(page: ft.Page):
        
     )
     
-
-
-    #Build up Page list
-
     
     page_1 = ft.Container(
         ft.Column(
@@ -814,18 +784,17 @@ def main(page: ft.Page):
         ),
         visible=True
     )
+    
     page_2 = ft.Container(
         ft.Column(
-            [
-                
-                
-                
+            [                
+                TodoApp()
             ],
-            scroll=ft.ScrollMode.ALWAYS
+            height=500
         ),
-        
         visible=False
     )
+    # page_2 = TodoApp()
     page_3 = ft.Container(
         ft.Column(
             [
@@ -856,21 +825,202 @@ def main(page: ft.Page):
         
        
     )
+    #Set up Page List and Loop
+    
+   
+    #Build up Page list
+    Todo_tabs_notification = ft.Column(
+        [
 
-
+        ]
+    )
     page_stack = [
         page_1,
         page_2,
         page_3,
         page_4
     ]
+    #Build Tabs Selection 
+    tabs_1 = ft.Container(
+        ft.Column(
+            [
+                ft.Text("Home",size=30,color="white"),
+                
+                
+            ],
+            scroll=ft.ScrollMode.ALWAYS
+        ),
+        visible=True
+    )
+    tabs_2 = ft.Container(
+        ft.Column(
+            [
+                ft.Column(
+                    [
+                        ft.Text("Todo",size=30,color="white"),
+                    ],
+                    
+                ),
+                Todo_tabs_notification
+                
+            ],
+            scroll=ft.ScrollMode.ALWAYS
+        ),
+        visible=True,
+    )
+    tabs_3 = ft.Container(
+        ft.Column(
+            [
+                ft.Text("Schedule",size=30,color="white")
+            ],
+            scroll=ft.ScrollMode.ALWAYS
+        ),
+        visible=True
+    )
+    tabs_4 = ft.Container(
+        ft.Column(
+            [
+                ft.Text("Chat AI",size=30,color="white")
+            ],
+            scroll=ft.ScrollMode.ALWAYS
+        ),
+        visible=True
+       
+    )
+    tabs_5 = ft.Container(
+        ft.Column(
+            [
+                ft.Text("Profile",size=30,color="white")
+            ],
+            scroll=ft.ScrollMode.ALWAYS
+        ),
+        width=500,
+        visible=True,
+       
+    )
+
+
+    page_tabs = [
+        tabs_1,
+        tabs_2,
+        tabs_3,
+        tabs_4,
+        tabs_5
+    ]
+    #Custom Tabs
+    SelectionTabs = ft.Tabs(
+        on_change=Selected_tabs,
+        selected_index=0,
+        animation_duration=500,
+        tabs=[
+            ft.Tab(
+                text="Home",
+                icon="Home",
+                content=tabs_1
+            ),
+            ft.Tab(
+                text="to do",
+                icon="Book",
+                content=tabs_2
+            ),
+            ft.Tab(
+                text="Schedule",
+                icon="Schedule",
+                content=tabs_3
+            ),
+            ft.Tab(
+                text="ChatAI",
+                icon=ft.icons.CHAT,
+                content=tabs_4
+            ),
+            ft.Tab(
+                text="Profile",
+                icon=ft.icons.ACCOUNT_BOX_ROUNDED,
+                content=tabs_5
+                
+            ),
+            
+        ],
+        expand=1,
+        label_color=ft.colors.WHITE,
+        divider_color=ft.colors.ORANGE,
+        scrollable=True,
+        indicator_color="white",
+        unselected_label_color="White"  
+    )
+
+
+    Search = ft.Container(
+        ft.TextField(width=300,height=50,border_color="white",hint_text="Search...",
+            hint_style=ft.TextStyle(color="white",size=15),
+            text_size=15,border_radius=10,color="white"
+        ),
+
+        
+    )
+    
+    #Create Button Actor
+    OpenBar = ft.Container(width=100,height=10,bgcolor="grey",on_click=Tabs_TopBar,visible=True)
+    CloseBar = ft.Container(width=100,height=10,bgcolor="grey",on_click=Tabs_TopBar_close,visible=False)
+
+    Menu = ft.IconButton(ft.icons.MENU,icon_color="white",on_click=None,visible=True)
+    SearchIcon = ft.IconButton(icon="search",icon_color="white",on_click=None,visible=True)
+    #Custome Actor, Banner, Design for page_1
+    Greeting_banner = ft.Container(
+        ft.Column(
+            [
+                ft.Row(
+                    [
+                        
+                        Menu,
+                        ft.Text("UpCase",color="white",size=25,weight="bold"),
+                        SearchIcon,
+                        
+                            
+                    ],
+                    alignment="spaceBetween",
+                ),
+                ft.Row(
+                    [
+                        Search,
+                    ],
+                    alignment=ft.MainAxisAlignment.CENTER
+                ),
+                SelectionTabs,
+                
+            ]
+        ),
+        border_radius=ft.border_radius.vertical(
+            bottom=25
+        ),
+        bgcolor="Orange",
+        width=400,
+        height=50,
+        padding=10,
+        shadow= ft.BoxShadow(
+            blur_radius=3,
+            color="black",
+            blur_style=ft.ShadowBlurStyle.OUTER
+        ),
+        animate=ft.animation.Animation(1000, ft.AnimationCurve.BOUNCE_OUT),
+        
+        
+    )
+    
+    
+
+
+    
+    
+    #APP'S NAVIGATION
+    #Type CupertinoNavigationBar
     AppBar = ft.CupertinoNavigationBar(
         
         selected_index=0,
         on_change=Selected_page,
-        bgcolor=ft.colors.WHITE,
+        bgcolor=ft.colors.BLACK,
         inactive_color=ft.colors.GREY,
-        active_color=ft.colors.PINK_100,
+        active_color=ft.colors.ORANGE,
         destinations=[
             ft.NavigationDestination(icon=ft.icons.HOME, label="Home"),
             ft.NavigationDestination(icon=ft.icons.LIST, label="TODO"),
@@ -893,14 +1043,24 @@ def main(page: ft.Page):
                 "/HOME",
                 [
                     Greeting_banner,
+                    ft.Row(
+                        [
+                            OpenBar,
+                            CloseBar
+                        ],
+                        alignment=ft.MainAxisAlignment.CENTER
+                    ),
                     AppBar,
                     ft.Column(page_stack,scroll=True, expand=True)
                 ],
                 Display_Profile(e),
                 Display_Edit_Profile(e),
-                bgcolor=ft.colors.PINK_100
+                Invisible_banner(e),
+                bgcolor="Black"
             )
         )
+        if page.route == "/Profile":
+            pass
         
         page.update()
     def view_pop(View):
@@ -910,8 +1070,8 @@ def main(page: ft.Page):
     page.on_route_change = route_change
     page.on_view_pop = view_pop
     page.go(page.route)
-
-    
+    page.window_width =380
+    page.window_resizable = False
     page.update()
 
 if __name__ == "__main__":
